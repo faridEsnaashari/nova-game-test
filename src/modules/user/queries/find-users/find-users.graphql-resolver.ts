@@ -4,9 +4,9 @@ import { Result } from 'oxide.ts';
 import { ResponseBase } from '../../../../libs/api/response.base';
 import { Paginated } from '../../../../libs/ddd';
 import { PaginatedParams } from '../../../../libs/ddd/query.base';
-import { UserModel } from '../../database/user.repository';
 import { UserPaginatedGraphqlResponseDto } from '../../dtos/graphql/user.paginated-gql-response.dto';
 import { FindUsersQuery } from './find-users.query-handler';
+import { UserEntity } from '../../domain/user.entity';
 
 @Resolver()
 export class FindUsersGraphqlResolver {
@@ -18,7 +18,7 @@ export class FindUsersGraphqlResolver {
   ): Promise<UserPaginatedGraphqlResponseDto> {
     const query = new FindUsersQuery(options);
     const result: Result<
-      Paginated<UserModel>,
+      Paginated<UserEntity>,
       Error
     > = await this.queryBus.execute(query);
 
@@ -27,10 +27,10 @@ export class FindUsersGraphqlResolver {
       ...paginated,
       data: paginated.data.map((user) => ({
         ...new ResponseBase(user),
-        email: user.email,
-        country: user.country,
-        street: user.street,
-        postalCode: user.postalCode,
+        email: user.getProps().email,
+        country: user.getProps().address.country,
+        street: user.getProps().address.street,
+        postalCode: user.getProps().address.postalCode,
       })),
     });
     return response;

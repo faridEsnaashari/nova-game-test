@@ -2,9 +2,10 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { Ok, Result } from 'oxide.ts';
 import { PaginatedParams, PaginatedQueryBase } from '@libs/ddd/query.base';
 import { Paginated } from '@src/libs/ddd';
-import { InjectPool } from 'nestjs-slonik';
-import { DatabasePool, sql } from 'slonik';
-import { UserModel, userSchema } from '../../database/user.repository';
+import { UserEntity } from '../../domain/user.entity';
+import { InjectConnection } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
+import { UserMapper } from '../../user.mapper';
 
 export class FindUsersQuery extends PaginatedQueryBase {
   readonly country?: string;
@@ -24,8 +25,10 @@ export class FindUsersQuery extends PaginatedQueryBase {
 @QueryHandler(FindUsersQuery)
 export class FindUsersQueryHandler implements IQueryHandler {
   constructor(
-    @InjectPool()
-    private readonly pool: DatabasePool,
+    @InjectConnection()
+    private readonly connection: Connection,
+
+    private userMapper: UserMapper,
   ) {}
 
   /**
@@ -36,27 +39,31 @@ export class FindUsersQueryHandler implements IQueryHandler {
    */
   async execute(
     query: FindUsersQuery,
-  ): Promise<Result<Paginated<UserModel>, Error>> {
+  ): Promise<Result<Paginated<UserEntity>, Error>> {
     /**
      * Constructing a query with Slonik.
      * More info: https://contra.com/p/AqZWWoUB-writing-composable-sql-using-java-script
      */
-    const statement = sql.type(userSchema)`
-         SELECT *
-         FROM users
-         WHERE
-           ${query.country ? sql`country = ${query.country}` : true} AND
-           ${query.street ? sql`street = ${query.street}` : true} AND
-           ${query.postalCode ? sql`"postalCode" = ${query.postalCode}` : true}
-         LIMIT ${query.limit}
-         OFFSET ${query.offset}`;
+    const collection = this.connection.db.collection('users');
 
-    const records = await this.pool.query(statement);
+    const or: Record<string, unknown>[] = [];
+    query.country && or.push({ country: query.country });
+    query.street && or.push({ street: query.street });
+    query.postalCode && or.push({ postalCode: query.postalCode });
+
+    const q = or.length > 0 ? { $or: or } : {};
+
+    const result: any = [];
+    const cursor = collection.find(q);
+    for await (const doc of cursor) {
+      result.push(doc);
+    }
+    //TODO add pagination in query
 
     return Ok(
       new Paginated({
-        data: records.rows,
-        count: records.rowCount,
+        data: result.map(this.userMapper.toDomain),
+        count: result.length,
         limit: query.limit,
         page: query.page,
       }),

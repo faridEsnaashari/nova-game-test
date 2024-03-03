@@ -8,8 +8,8 @@ import { FindUsersQuery } from './find-users.query-handler';
 import { Paginated } from '@src/libs/ddd';
 import { UserPaginatedResponseDto } from '../../dtos/user.paginated.response.dto';
 import { PaginatedQueryRequestDto } from '@src/libs/api/paginated-query.request.dto';
-import { UserModel } from '../../database/user.repository';
 import { ResponseBase } from '@src/libs/api/response.base';
+import { UserEntity } from '../../domain/user.entity';
 
 @Controller(routesV1.version)
 export class FindUsersHttpController {
@@ -31,7 +31,7 @@ export class FindUsersHttpController {
       page: queryParams?.page,
     });
     const result: Result<
-      Paginated<UserModel>,
+      Paginated<UserEntity>,
       Error
     > = await this.queryBus.execute(query);
 
@@ -42,10 +42,10 @@ export class FindUsersHttpController {
       ...paginated,
       data: paginated.data.map((user) => ({
         ...new ResponseBase(user),
-        email: user.email,
-        country: user.country,
-        street: user.street,
-        postalCode: user.postalCode,
+        email: user.getProps().email,
+        country: user.getProps().address.country,
+        street: user.getProps().address.street,
+        postalCode: user.getProps().address.postalCode,
       })),
     });
   }
