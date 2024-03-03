@@ -19,7 +19,7 @@ export class UserMapper
   toPersistence(entity: UserEntity): UserModel {
     const copy = entity.getProps();
     const record: UserModel = {
-      id: copy.id,
+      _id: copy.id,
       createdAt: copy.createdAt,
       updatedAt: copy.updatedAt,
       email: copy.email,
@@ -33,7 +33,7 @@ export class UserMapper
 
   toDomain(record: UserModel): UserEntity {
     const entity = new UserEntity({
-      id: record.id,
+      id: record._id,
       createdAt: new Date(record.createdAt),
       updatedAt: new Date(record.updatedAt),
       props: {
