@@ -20,15 +20,6 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest -i --config jest-e2e.json",
     "docker:env": "docker-compose --file docker/docker-compose.yml up --build",
-    "migration:create": "ts-node database/migrate create --name",
-    "migration:up": "ts-node database/migrate up",
-    "migration:up:tests": "NODE_ENV=test ts-node database/migrate up",
-    "migration:down": "ts-node database/migrate down",
-    "migration:down:tests": "NODE_ENV=test ts-node database/migrate down",
-    "migration:executed": "ts-node database/migrate executed",
-    "migration:executed:tests": "NODE_ENV=test ts-node database/migrate executed",
-    "migration:pending": "ts-node database/migrate pending",
-    "migration:pending:tests": "NODE_ENV=test ts-node database/migrate pending",
     "seed:up": "ts-node database/seed",
     "depcruise": "depcruise",
     "deps:validate": "depcruise src --config .dependency-cruiser.js --output-type err-long",
@@ -42,6 +33,7 @@
     "@nestjs/event-emitter": "^1.3.1",
     "@nestjs/graphql": "^10.1.2",
     "@nestjs/microservices": "^9.1.2",
+    "@nestjs/mongoose": "^10.0.4",
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.1.2",
     "@slonik/migrator": "^0.11.3",
@@ -53,6 +45,8 @@
     "env-var": "^7.3.0",
     "graphql": "^16.6.0",
     "jest-cucumber": "^3.0.1",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.2.0",
     "nanoid": "^3.3.4",
     "nestjs-console": "^8.0.0",
     "nestjs-request-context": "^2.1.0",
@@ -91,19 +85,13 @@
     "typescript": "^4.7.4"
   },
   "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
+    "moduleFileExtensions": ["js", "json", "ts"],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
+    "collectCoverageFrom": ["**/*.(t|j)s"],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },

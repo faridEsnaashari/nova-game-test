@@ -8,7 +8,7 @@ export class WalletMapper implements Mapper<WalletEntity, WalletModel> {
   toPersistence(entity: WalletEntity): WalletModel {
     const copy = entity.getProps();
     const record: WalletModel = {
-      id: copy.id,
+      _id: copy.id,
       createdAt: copy.createdAt,
       updatedAt: copy.updatedAt,
       userId: copy.userId,
@@ -19,7 +19,7 @@ export class WalletMapper implements Mapper<WalletEntity, WalletModel> {
 
   toDomain(record: WalletModel): WalletEntity {
     const entity = new WalletEntity({
-      id: record.id,
+      id: record._id,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       props: {
